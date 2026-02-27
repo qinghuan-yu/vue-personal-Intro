@@ -4,25 +4,16 @@
       <div class="archive-wrapper">
         <!-- Left Panel: Post List -->
         <div class="archive-left">
+          <h1 class="title">Bloglist</h1>
+          <div class="subtitle">// Recording notes and life</div>
           <!-- Post List -->
           <div class="archive-list-container">
-            <transition-group 
-              tag="div" 
-              name="staggered-list" 
-              class="archive-list"
-              appear
-            >
-              <button 
-                v-for="(post, index) in posts" 
-                :key="post.id"
-                @click="selectPost(post)"
-                class="ak-list-item"
-                :class="{ active: activePostId === post.id }"
-                :style="{ '--i': index }"
-              >
+            <transition-group tag="div" name="staggered-list" class="archive-list" appear>
+              <button v-for="(post, index) in posts" :key="post.id" @click="selectPost(post)" class="ak-list-item"
+                :class="{ active: activePostId === post.id }" :style="{ '--i': index }">
                 <div class="item-content-row">
-                   <h3 class="item-title-cn">{{ post.title }}</h3>
-                   <span class="item-subtitle-en">{{ post.displayDate }}</span>
+                  <h3 class="item-title-cn">{{ post.title }}</h3>
+                  <span class="item-subtitle-en">{{ post.displayDate }}</span>
                 </div>
                 <div class="item-separator"></div>
               </button>
@@ -35,15 +26,12 @@
           <!-- Removed explicit progress bar UI, kept scroll container -->
           <transition name="list-section" mode="out-in">
             <div :key="activePostId" class="post-content-container">
-               <div v-if="currentPostContent" 
-                    class="markdown-scroll-wrapper" 
-                    @wheel.stop
-               >
-                  <MarkdownRenderer :source="currentPostContent" />
-               </div>
-               <div v-else class="empty-state">
-                  Select a post to view // INITIALIZING...
-               </div>
+              <div v-if="currentPostContent" class="markdown-scroll-wrapper" @wheel.stop>
+                <MarkdownRenderer :source="currentPostContent" />
+              </div>
+              <div v-else class="empty-state">
+                Select a post to view // INITIALIZING...
+              </div>
             </div>
           </transition>
         </div>
@@ -66,7 +54,7 @@ const activePostId = ref(null);
 onMounted(() => {
   // Process imported modules
   const loadedPosts = [];
-  
+
   for (const path in modules) {
     const content = modules[path];
     const titleMatch = content.match(/title:\s*["']?([^"'\n\r]+)["']?/);
@@ -74,7 +62,7 @@ onMounted(() => {
     // Simple logic to extract date parts for display "YYYY // MM / DD"
     const rawDate = dateMatch ? dateMatch[1] : '2026-01-01';
     const displayDate = rawDate.replace(/-/g, ' / ').replace(/^(\d{4}) \/ /, '$1 // ');
-    
+
     loadedPosts.push({
       title: titleMatch ? titleMatch[1] : 'Untitled Post',
       date: rawDate,
@@ -116,10 +104,12 @@ const currentPostContent = computed(() => {
 .staggered-list-leave-active {
   transition: all 1.2s cubic-bezier(0.22, 1, 0.36, 1);
 }
+
 .staggered-list-enter-from,
 .staggered-list-leave-to {
   opacity: 0;
-  transform: translateX(-30px); /* Slide in from left */
+  transform: translateX(-30px);
+  /* Slide in from left */
 }
 
 .archive-container {
@@ -134,8 +124,11 @@ const currentPostContent = computed(() => {
   align-items: center;
   padding: 24px;
 }
+
 @media (min-width: 1024px) {
-  .layer-content { padding: 96px; }
+  .layer-content {
+    padding: 96px;
+  }
 }
 
 .archive-wrapper {
@@ -144,14 +137,42 @@ const currentPostContent = computed(() => {
   width: 100%;
   gap: 48px;
 }
+
 @media (min-width: 1024px) {
-  .archive-wrapper { flex-direction: row; align-items: center; }
+  .archive-wrapper {
+    flex-direction: row;
+    align-items: center;
+  }
 }
 
 .archive-left {
   width: 100%;
 }
-@media (min-width: 1024px) { .archive-left { width: 28%; } }
+
+@media (min-width: 1024px) {
+  .archive-left {
+    width: 28%;
+  }
+}
+
+.title {
+  font-size: 48px;
+  color: #22d3ee;
+  margin: 0;
+  letter-spacing: -0.05em;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.subtitle {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.4);
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  margin-top: 8px;
+  /* space between title and subtitle */
+  margin-bottom: 48px;
+}
 
 .archive-right {
   width: 100%;
@@ -159,7 +180,12 @@ const currentPostContent = computed(() => {
   justify-content: center;
   position: relative;
 }
-@media (min-width: 1024px) { .archive-right { width: 72%; } }
+
+@media (min-width: 1024px) {
+  .archive-right {
+    width: 72%;
+  }
+}
 
 .archive-header {
   margin-bottom: 48px;
@@ -192,7 +218,7 @@ const currentPostContent = computed(() => {
 /* --- New Arknights Style List --- */
 .category-tabs {
   display: flex;
-  margin-bottom: 0px; 
+  margin-bottom: 0px;
   background: rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(4px);
 }
@@ -245,7 +271,8 @@ const currentPostContent = computed(() => {
   transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.ak-list-item:hover, .ak-list-item.active {
+.ak-list-item:hover,
+.ak-list-item.active {
   opacity: 1;
   background: transparent;
   transform: translateX(10px) scale(1.02);
@@ -260,9 +287,12 @@ const currentPostContent = computed(() => {
 }
 
 .item-title-cn {
-  font-size: 18px; /* Reduced from 24px for lighter visual weight */
-  font-weight: 500; /* Reduced weight */
-  color: rgba(255, 255, 255, 0.6); /* Slightly increased visibility from 0.4 to 0.6 */
+  font-size: 18px;
+  /* Reduced from 24px for lighter visual weight */
+  font-weight: 500;
+  /* Reduced weight */
+  color: rgba(255, 255, 255, 0.6);
+  /* Slightly increased visibility from 0.4 to 0.6 */
   margin: 0;
   line-height: 1.4;
   transition: color 0.3s;
@@ -270,15 +300,18 @@ const currentPostContent = computed(() => {
 
 .ak-list-item:hover .item-title-cn,
 .ak-list-item.active .item-title-cn {
-  color: #fff; /* Highlight on hover/active */
+  color: #fff;
+  /* Highlight on hover/active */
   font-weight: 700;
 }
 
 .item-subtitle-en {
   font-family: 'Courier New', monospace;
-  font-size: 12px; /* Reduced from 14px */
+  font-size: 12px;
+  /* Reduced from 14px */
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.4); /* Slightly increased from 0.3 */
+  color: rgba(255, 255, 255, 0.4);
+  /* Slightly increased from 0.3 */
   letter-spacing: 0.05em;
   font-weight: 400;
 }
@@ -286,7 +319,7 @@ const currentPostContent = computed(() => {
 .ak-list-item:hover .item-subtitle-en,
 .ak-list-item.active .item-subtitle-en {
   /* color styles removed to default */
-   color: inherit;
+  color: inherit;
 }
 
 .item-separator {
@@ -305,7 +338,7 @@ const currentPostContent = computed(() => {
   background: #22d3ee;
   box-shadow: 0 0 5px #22d3ee;
   /* Use transform instead of height to avoid layout shift (jitter) */
-  transform: scaleY(2); 
+  transform: scaleY(2);
 }
 
 /* Remove old tab styles */
@@ -335,8 +368,12 @@ const currentPostContent = computed(() => {
   gap: 32px;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
 }
+
 @media (max-width: 768px) {
-  .data-card { flex-direction: column; aspect-ratio: auto; }
+  .data-card {
+    flex-direction: column;
+    aspect-ratio: auto;
+  }
 }
 
 .card-main {
@@ -408,8 +445,16 @@ const currentPostContent = computed(() => {
   flex-direction: column;
   justify-content: space-between;
 }
+
 @media (max-width: 768px) {
-  .card-sidebar { width: 100%; border-left: none; border-top: 1px solid rgba(255, 255, 255, 0.05); padding-left: 0; padding-top: 24px; flex-direction: row; }
+  .card-sidebar {
+    width: 100%;
+    border-left: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    padding-left: 0;
+    padding-top: 24px;
+    flex-direction: row;
+  }
 }
 
 .box-icon {
@@ -424,23 +469,58 @@ const currentPostContent = computed(() => {
   gap: 4px;
 }
 
-.line-lg { height: 4px; width: 100%; background: rgba(34, 211, 238, 0.2); }
-.line-sm { height: 4px; width: 66%; background: rgba(34, 211, 238, 0.2); }
+.line-lg {
+  height: 4px;
+  width: 100%;
+  background: rgba(34, 211, 238, 0.2);
+}
+
+.line-sm {
+  height: 4px;
+  width: 66%;
+  background: rgba(34, 211, 238, 0.2);
+}
 
 .sidebar-footer {
   text-align: right;
 }
 
-.sid { font-size: 8px; opacity: 0.2; font-family: monospace; margin: 0; }
-.sverified { font-size: 10px; font-weight: 500; color: rgba(34, 211, 238, 0.6); text-transform: uppercase; margin: 0; }
+.sid {
+  font-size: 8px;
+  opacity: 0.2;
+  font-family: monospace;
+  margin: 0;
+}
+
+.sverified {
+  font-size: 10px;
+  font-weight: 500;
+  color: rgba(34, 211, 238, 0.6);
+  text-transform: uppercase;
+  margin: 0;
+}
 
 
-.fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
-.fade-enter-from, .fade-leave-to { opacity: 0; }
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
 }
 
 /* Staggered List Animation */
@@ -453,7 +533,8 @@ const currentPostContent = computed(() => {
 .staggered-list-enter-from,
 .staggered-list-leave-to {
   opacity: 0;
-  transform: translateY(-40px); /* Slide in from TOP */
+  transform: translateY(-40px);
+  /* Slide in from TOP */
 }
 
 /* Post Content Animation (Transition) */
@@ -482,10 +563,11 @@ const currentPostContent = computed(() => {
 .markdown-scroll-wrapper {
   width: 100%;
   max-width: 800px;
-  height: 65vh; /* Fixed height to enable scrolling */
+  height: 65vh;
+  /* Fixed height to enable scrolling */
   overflow-y: auto;
   padding-right: 16px;
-  
+
   /* Firefox Scrollbar */
   scrollbar-width: thin;
   scrollbar-color: rgba(34, 211, 238, 0.3) rgba(255, 255, 255, 0.05);
@@ -497,18 +579,22 @@ const currentPostContent = computed(() => {
 }
 
 .markdown-scroll-wrapper::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05); /* Dark track */
+  background: rgba(255, 255, 255, 0.05);
+  /* Dark track */
   border-radius: 3px;
 }
 
 .markdown-scroll-wrapper::-webkit-scrollbar-thumb {
-  background: rgba(34, 211, 238, 0.3); /* Cyan thumb */
+  background: rgba(34, 211, 238, 0.3);
+  /* Cyan thumb */
   border-radius: 3px;
   transition: all 0.3s;
 }
 
 .markdown-scroll-wrapper::-webkit-scrollbar-thumb:hover {
-  background: #22d3ee; /* Brighter hover */
-  box-shadow: 0 0 10px #22d3ee; /* Glowing effect */
+  background: #22d3ee;
+  /* Brighter hover */
+  box-shadow: 0 0 10px #22d3ee;
+  /* Glowing effect */
 }
 </style>

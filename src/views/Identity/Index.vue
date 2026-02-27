@@ -57,13 +57,27 @@
 import { ref, onMounted } from 'vue';
 import { preloadResources } from '@/utils/resourceLoader';
 
+// Preload Contact asset images
+// Assuming images are in src/views/Contact and using explicit relative paths
+import contactBackscene from '@/views/Contact/backscene.png';
+import contactGithubIcon from '@/views/Contact/githubicon.png';
+import contactDesktop from '@/views/Contact/desktop.png';
+import contactGame from '@/views/Contact/game.png';
+import contactVinyl from '@/views/Contact/vinyl.png';
+import contactLetter from '@/views/Contact/letter.png';
+
 const isLoading = ref(false);
 const progress = ref(0);
 
 // 定义资源清单 (请替换为你项目中真实的路径)
 const resources = [
-  // 关键图片
-  // { type: 'image', url: '/images/hero-bg.jpg' },
+  // 关键图片 - Preload Contact Page Images
+  { type: 'image', url: contactBackscene },
+  { type: 'image', url: contactGithubIcon },
+  { type: 'image', url: contactDesktop },
+  { type: 'image', url: contactGame },
+  { type: 'image', url: contactVinyl },
+  { type: 'image', url: contactLetter },
   
   // 关键音频 (预加载这些可以让播放时不卡顿)
   // { type: 'audio', url: '/music/song1.mp3' }, 
@@ -72,6 +86,7 @@ const resources = [
   { type: 'component', importFn: () => import('@/views/Projects/Index.vue') },
   { type: 'component', importFn: () => import('@/views/Blog/Index.vue') },
   { type: 'component', importFn: () => import('@/views/Music/Index.vue') },
+  { type: 'component', importFn: () => import('@/views/Contact/Index.vue') },
   
   // 占位符 (为了演示效果，如果资源很少，进度条太快，可以加几个占位)
   { type: 'dummy' }, { type: 'dummy' }, { type: 'dummy' }

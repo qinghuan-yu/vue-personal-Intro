@@ -4,8 +4,8 @@
       <!-- Left Panel: Playlist -->
       <div class="music-left">
         <h2 class="playlist-header">
-          <span class="header-cn">播放列表(PREVIEW)</span>
-          <span class="header-en">PLAYLIST</span>
+          <span class="header-cn">Playlist</span>
+          <span class="header-en">// MUSIC PREVIEW</span>
         </h2>
         <div class="music-list-container">
             <transition-group 
@@ -381,17 +381,19 @@ onUnmounted(() => {
 }
 
 .header-cn {
-  font-size: 24px;
+   font-size: 48px;
+  color: #22d3ee;
+  margin: 0;
+  letter-spacing: -0.05em;
   font-weight: 500;
-  margin-bottom: 4px;
 }
 
 .header-en {
-  font-size: 10px;
-  letter-spacing: 0.5em;
-  color: var(--color-accent, #22d3ee); 
-  opacity: 0.6;
+    font-size: 10px;
+  color: rgba(255, 255, 255, 0.4);
+  letter-spacing: 0.4em;
   text-transform: uppercase;
+  margin-bottom: 48px;
 }
 
 .music-list-container {
