@@ -1,27 +1,28 @@
 <template>
-  <section class="identity-container">
-    <div v-if="isLoading" class="loading-overlay">
-      <div class="loading-content">
-        <div class="loading-text">SYSTEM INITIALIZING</div>
-        <div class="progress-bar-track">
-          <div class="progress-bar-fill" :style="{ width: progress + '%' }"></div>
+  <section class="identity-container" ref="containerRef">
+    <transition name="fade">
+      <div v-if="isLoading" class="loading-overlay">
+        <div class="loading-content">
+          <div class="progress-bar-track">
+            <div class="progress-bar-fill" :style="{ width: progress + '%' }"></div>
+          </div>
         </div>
-        <div class="progress-number">{{ progress }}%</div>
       </div>
-    </div>
+    </transition>
 
     <!-- Content Layer -->
     <div class="layer-content" :class="{ 'content-hidden': isLoading }">
       <div class="identity-wrapper">
         <!-- 1. Title Group (First) -->
-        <h1 class="main-title stagger-item" style="--i: 1;"><span class="relic-text">I am Relic</span><br><span class="blue-text">I am Ark</span></h1>
+        <h1 class="main-title stagger-item" style="--i: 1;"><span class="relic-text">I am Relic</span><br><span
+            class="blue-text">I am Ark</span></h1>
 
         <!-- 2. Profile Tag & Details (Second) -->
         <div class="profile-header stagger-item" style="--i: 8;">
           <div class="h-line-anim"></div>
           <span class="header-tag">Profile Authenticated</span>
         </div>
-        
+
         <div class="detail-grid">
           <div class="detail-left">
             <div class="detail-item group stagger-item" style="--i: 9;">
@@ -31,7 +32,7 @@
                 <p class="detail-main">JUFE Sophomore / Kaggle Preparing</p>
               </div>
             </div>
-            
+
             <div class="detail-item group stagger-item" style="--i: 10;">
               <div class="icon-wrap">[MUSIC]</div>
               <div>
@@ -43,8 +44,8 @@
 
           <div class="detail-right">
             <div class="signature-box stagger-item" style="--i: 11;">
-               <p class="sig-label">Signature</p>
-               <p class="sig-val" style="font-family: 'Noto Sans SC', serif;">清棫</p>
+              <p class="sig-label">Signature</p>
+              <p class="sig-val" style="font-family: 'Noto Sans SC', serif;">清棫</p>
             </div>
           </div>
         </div>
@@ -56,6 +57,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { preloadResources } from '@/utils/resourceLoader';
+import { hasInitialLoaded } from '@/utils/globalState';
 
 // Preload Contact asset images
 // Assuming images are in src/views/Contact and using explicit relative paths
@@ -66,8 +68,9 @@ import contactGame from '@/views/Contact/game.png';
 import contactVinyl from '@/views/Contact/vinyl.png';
 import contactLetter from '@/views/Contact/letter.png';
 
-const isLoading = ref(false);
+const isLoading = ref(!hasInitialLoaded.value);
 const progress = ref(0);
+const containerRef = ref(null);
 
 // 定义资源清单 (请替换为你项目中真实的路径)
 const resources = [
@@ -78,64 +81,70 @@ const resources = [
   { type: 'image', url: contactGame },
   { type: 'image', url: contactVinyl },
   { type: 'image', url: contactLetter },
-  
+
   // 关键音频 (预加载这些可以让播放时不卡顿)
   // { type: 'audio', url: '/music/song1.mp3' }, 
-  
+
   // 关键页面组件 (路由预热)
   { type: 'component', importFn: () => import('@/views/Projects/Index.vue') },
   { type: 'component', importFn: () => import('@/views/Blog/Index.vue') },
   { type: 'component', importFn: () => import('@/views/Music/Index.vue') },
   { type: 'component', importFn: () => import('@/views/Contact/Index.vue') },
-  
+
   // 占位符 (为了演示效果，如果资源很少，进度条太快，可以加几个占位)
   { type: 'dummy' }, { type: 'dummy' }, { type: 'dummy' }
 ];
 
 onMounted(async () => {
-  // 检查是否是网站首次加载（整个会话的第一次访问）
-  const isFirstVisit = !sessionStorage.getItem('hasVisited');
-  const container = document.querySelector('.identity-container');
-  // App Loading Finished Time (approx 3.5s)
-  
-  if (isFirstVisit) {
-    // 首次访问：开启 Loading 模式
+  const container = containerRef.value;
+
+  // 每次进入先清理旧的动画类名，确保视差动画可以重新触发
+  if (container) {
+    container.classList.remove('animate-entry');
+  }
+
+  // 逻辑分流：判断是否是初次加载网站
+  if (!hasInitialLoaded.value) {
+    // 场景 A：初次进入，执行完整加载流程
     isLoading.value = true;
-    
+    progress.value = 0;
+
     try {
       // 执行真实预加载
       await preloadResources(resources, (p) => {
         progress.value = p;
       });
-      
+
       // 加载完成，稍作停留展示 100%
       setTimeout(() => {
-        finishLoading(container);
+        finishLoading(true);
       }, 500);
-      
+
     } catch (e) {
       console.error("Loading failed", e);
-      finishLoading(container); // 出错也要进系统
+      finishLoading(true); // 出错也要进系统
     }
-  } else if (container) {
-    // 非首次访问：直接显示，不需要 Loading
-    isLoading.value = false;
-    // 强制先移除（防止缓存导致的类名残留），再延迟添加
-    container.classList.remove('animate-entry'); 
-    
-    // 延迟 100ms 确保每一轮进入都能触发完整的 transition 动画
-    // 这对于保留"进场感"非常重要
-    setTimeout(() => {
-         container.classList.add('animate-entry');
-    }, 100);
+  } else {
+    // 场景 B：从其他页面切回来
+    // 直接跳过预加载，直接触发进场动画
+    finishLoading(false);
   }
 });
 
-function finishLoading(container) {
+function finishLoading(isFirstTime) {
+  const container = containerRef.value;
+
+  if (isFirstTime) {
+    hasInitialLoaded.value = true; // 修改全局状态
+  }
+  
   isLoading.value = false;
-  sessionStorage.setItem('hasVisited', 'true');
+  // sessionStorage.setItem('hasVisited', 'true'); // 不需要再记录
   if (container) {
-    container.classList.add('animate-entry');
+    // 延迟一小会儿确保 DOM 更新后再添加动画类
+    setTimeout(() => {
+      container.classList.add('animate-entry');
+    }, 50);
   }
 }
 </script>
@@ -156,25 +165,31 @@ function finishLoading(container) {
   left: 0;
   width: 100%;
   height: 100%;
-  background: #0a0a0a; /* 与背景色一致 */
+  background: #0a0a0a;
+  /* 与背景色一致 */
   z-index: 100;
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
-.loading-content {
-  width: 300px;
-  text-align: center;
+/* Vue <transition> 的内置类名控制淡入淡出 */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.6s ease;
 }
 
-.loading-text {
-  color: #22d3ee;
-  font-size: 12px;
-  letter-spacing: 0.2em;
-  margin-bottom: 12px;
-  font-family: monospace;
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
+
+.loading-content {
+  width: 300px;
+  /* 居中对齐 */
+  margin: 0 auto; 
+}
+
 
 .progress-bar-track {
   width: 100%;
@@ -191,13 +206,7 @@ function finishLoading(container) {
   box-shadow: 0 0 10px #22d3ee;
 }
 
-.progress-number {
-  color: #22d3ee;
-  font-family: monospace;
-  font-size: 10px;
-  margin-top: 8px;
-  text-align: right;
-}
+
 
 /* 控制内容显示的辅助类 */
 .content-hidden {
@@ -205,7 +214,7 @@ function finishLoading(container) {
 }
 
 .identity-container {
-  min-height: 80vh; 
+  min-height: 80vh;
   height: 100%;
   position: relative;
   overflow: hidden;
@@ -223,33 +232,35 @@ function finishLoading(container) {
 .identity-container.animate-entry .stagger-item {
   opacity: 1;
   transform: translateY(0);
-  transition-delay: calc(var(--i) * 0.1s); /* Speed up base logic slightly */
+  transition-delay: calc(var(--i) * 0.1s);
+  /* Speed up base logic slightly */
 }
 
 /* 1. Title appears FIRST (Solo) */
 /* Instant or very fast */
 .identity-container.animate-entry .main-title.stagger-item {
-   transition-delay: 0.1s;
+  transition-delay: 0.1s;
 }
 
 /* 2. Figure 2 Content - Layered Stagger */
 /* Profile Header (Top of Fig 2) */
 /* Shorter Gap: 0.8s -> 0.5s */
 .identity-container.animate-entry .profile-header.stagger-item {
-   transition-delay: 0.5s !important; 
+  transition-delay: 0.5s !important;
 }
 
 /* Left Column Details (Monitor, Music) */
 .identity-container.animate-entry .detail-left .stagger-item:nth-child(1) {
-   transition-delay: 0.7s !important;
+  transition-delay: 0.7s !important;
 }
+
 .identity-container.animate-entry .detail-left .stagger-item:nth-child(2) {
-   transition-delay: 0.9s !important;
+  transition-delay: 0.9s !important;
 }
 
 /* Right Column (Signature) */
 .identity-container.animate-entry .signature-box.stagger-item {
-   transition-delay: 1.1s !important;
+  transition-delay: 1.1s !important;
 }
 
 /* ... existing styles ... */
@@ -264,8 +275,11 @@ function finishLoading(container) {
   align-items: center;
   padding: 0 24px;
 }
+
 @media (min-width: 1024px) {
-  .layer-content { padding: 0 96px; }
+  .layer-content {
+    padding: 0 96px;
+  }
 }
 
 .identity-wrapper {
@@ -273,8 +287,11 @@ function finishLoading(container) {
   z-index: 10;
   width: 100%;
 }
+
 @media (min-width: 1024px) {
-  .identity-wrapper { width: 66.66%; }
+  .identity-wrapper {
+    width: 66.66%;
+  }
 }
 
 .profile-header {
@@ -308,8 +325,11 @@ function finishLoading(container) {
   margin-top: 0;
   text-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
 }
+
 @media (min-width: 1024px) {
-  .main-title { font-size: 160px; }
+  .main-title {
+    font-size: 160px;
+  }
 }
 
 .detail-grid {
@@ -319,8 +339,11 @@ function finishLoading(container) {
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   padding-top: 40px;
 }
+
 @media (min-width: 768px) {
-  .detail-grid { grid-template-columns: repeat(2, 1fr); }
+  .detail-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 .detail-left {
@@ -340,7 +363,8 @@ function finishLoading(container) {
   font-size: 12px;
   font-weight: 500;
   margin-top: 4px;
-  min-width: 85px; /* Ensure alignment between items */
+  min-width: 85px;
+  /* Ensure alignment between items */
 }
 
 .detail-sub {
@@ -374,8 +398,11 @@ function finishLoading(container) {
   width: 100%;
   backdrop-filter: none;
 }
+
 @media (min-width: 768px) {
-  .signature-box { width: 288px; }
+  .signature-box {
+    width: 288px;
+  }
 }
 
 .sig-label {

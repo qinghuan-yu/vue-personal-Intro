@@ -22,10 +22,7 @@
           </button>
         </transition-group>
 
-        <div class="sidebar-footer">
-          <div class="deco-line"></div>
-          <p>EST. 2024 // RELIARC.ME</p>
-        </div>
+        
       </div>
 
       <!-- Right/Center: Visual Presentation Layer -->
@@ -109,7 +106,7 @@ const channels = [
   },
   {
     key: 'music',
-    label: 'NETEASE',
+    label: 'NETEASE MUSIC',
     sub: 'AUDIO //',
     desc: '网易云音乐歌手主页',
     img: getAssetUrl('vinyl.png'),
@@ -408,13 +405,6 @@ const openLink = (url) => {
   transform: scaleY(2);
 }
 
-.sidebar-footer {
-  margin-top: auto;
-  opacity: 0.3;
-  font-size: 12px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  padding-top: 20px;
-}
 
 .deco-line {
   width: 40px;
