@@ -1,15 +1,13 @@
 <template>
   <section class="identity-container" ref="containerRef">
     <Teleport to="body">
-      <!-- 移除复杂的事件监听，改回基础的 v-if 和 CSS transition -->
-      <transition name="fade">
-        <div v-if="isLoading" class="loading-overlay">
-          <div class="loading-content">
-            <div class="progress-bar-track">
-              <!-- 移除 transitionend，改由 JS 定时控制 -->
-              <div class="progress-bar-fill" :style="{ width: progress + '%' }"></div>
+      <!-- Index.html style loading overlay implementation -->
+      <transition name="loading-fade">
+        <div v-if="isLoading" class="app-loading-overlay">
+          <div class="loader-wrapper">
+            <div class="progress-container">
+              <div class="progress-bar" :style="{ width: progress + '%' }"></div>
             </div>
-            <!-- Optional: Loading Text -->
           </div>
         </div>
       </transition>
@@ -192,64 +190,56 @@ onMounted(async () => {
   color: #888888;
 }
 
-/* 新增：Loading 样式 */
-.loading-overlay {
-  position: fixed; /* 改为 fixed 以确保相对于视口定位 */
+/* App Level Loading Screen Styles migrated from index.html */
+.app-loading-overlay {
+  position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: #050505; /* 确保背景完全不透明 */
-  z-index: 9999; /* 提高层级，超过 MainLayout 的 nav (z-index: 100) */
+  background-color: #050505;
+  z-index: 99999;
   display: flex;
   justify-content: center;
   align-items: center;
+  pointer-events: none;
 }
 
-/* 添加 loading-text 样式 */
-.loading-text {
-  margin-top: 10px;
-  color: #22d3ee;
-  font-family: monospace;
-  font-size: 12px;
+.loader-wrapper {
+  width: 600px; /* Wider progress bar */
+  position: relative;
   text-align: center;
-  opacity: 0.8;
-  letter-spacing: 1px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
-/* Vue <transition> 的内置类名控制淡入淡出 */
-.fade-enter-active,
-.fade-leave-active {
+/* Progress Bar */
+.progress-container {
+  width: 100%;
+  height: 2px;
+  background: rgba(255,255,255,0.1);
+  overflow: hidden;
   transition: opacity 0.6s ease;
 }
 
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-
-.loading-content {
-  width: 300px;
-  /* 居中对齐 */
-  margin: 0 auto; 
-}
-
-
-.progress-bar-track {
-  width: 100%;
-  height: 2px;
-  background: rgba(34, 211, 238, 0.2);
-  position: relative;
-}
-
-.progress-bar-fill {
+.progress-bar {
   height: 100%;
-  background: #22d3ee;
+  background: #22d3ee; /* Cyan */
   width: 0%;
   transition: width 0.2s linear;
-  box-shadow: 0 0 10px #22d3ee;
 }
 
+/* Vue Transition logic matching the old index.html fading steps */
+.loading-fade-leave-active {
+  transition: opacity 1.0s ease 0.6s; /* overlay execution */
+}
+.loading-fade-leave-active .progress-container {
+   opacity: 0; /* step 1: bar fades */
+}
+.loading-fade-leave-to {
+  opacity: 0; /* step 2: overlay fades */
+}
 
 
 /* 控制内容显示的辅助类 */

@@ -6,7 +6,7 @@ export const PROJECTS_DATA = [
     type: 'IOT', 
     title: 'GIF 播放器',
     descTitle: 'GIF-PLAYER',
-    desc: '基于ESP-32以及 TFT 显示屏的便携式 GIF 播放器。支持多种动画格式和自定义播放列表。',
+    desc: '基于ESP-32以及 TFT 显示屏的便携式 GIF 播放器。支持多种动画格式和自定义播放列表',
     link: 'https://github.com/qinghuan-yu/gif-player',
     image: ASSETS.PCB_DETAIL // 使用统一配置
   },
@@ -22,7 +22,7 @@ export const PROJECTS_DATA = [
     type: 'DEEP-LEARNING', 
     title: '演奏分析', 
     descTitle: 'PIANALYSIS',
-    desc: '基于Transformer框架的深度学习钢琴音色补全方法，可使用训练好的模型对MIDI文件进行织体补全。',
+    desc: '基于Transformer框架的深度学习钢琴音色补全方法，可使用训练好的模型对MIDI文件进行织体补全',
     link: 'https://github.com/qinghuan-yu/Pianalysis',
     image: ASSETS.AI
   },
@@ -30,7 +30,7 @@ export const PROJECTS_DATA = [
     type: 'WEB', 
     title: '个人网页', 
     descTitle: 'PERSONAL INTRO',
-    desc: '一个基于Vue的个人网页。',
+    desc: '一个基于Vue的个人网页',
     link: 'https://github.com/qinghuan-yu/vue-persenal-Intro',
     image: ASSETS.VUE
   },
