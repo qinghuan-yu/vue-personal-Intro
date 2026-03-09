@@ -85,6 +85,7 @@ const songs = [
 const currentSongIndex = ref(-1);
 const currentSong = ref(null);
 const isPlaying = ref(false);
+const isLoading = ref(false);
 
 // Audio Context & Logic
 let audioContext = null;
@@ -92,6 +93,7 @@ let audioSource = null;
 let audioBuffer = null;
 let startTime = 0;
 let pauseTime = 0; // 记录暂停时的位置
+let loadVersion = 0; // 竞态保护：每次加载递增，过时的异步操作提前退出
 
 // Visualizer Config
 const linesTotal = 100;
@@ -142,57 +144,89 @@ const initAudio = () => {
 };
 
 const loadSong = async (index, autoPlay = true) => {
-  // if (isLoading.value) return; // Allow reloading or initial loading without blocking UI visually
-  
+  // 每次加载递增版本号，让旧的异步操作能检测到自己已过时
+  const version = ++loadVersion;
+
   stopAudio();
+  audioBuffer = null; // 清除旧 buffer，防止 togglePlay 误用
+  wavesData = null;
+
   currentSongIndex.value = index;
   currentSong.value = songs[index];
-  // isLoading.value = true; // No longer needed for UI
+  isLoading.value = true;
   
   try {
     initAudio();
     const response = await fetch(songs[index].src);
     const arrayBuffer = await response.arrayBuffer();
+
+    // fetch 完成后检查版本，若已过时则放弃
+    if (version !== loadVersion) return;
+
     audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-    
-    // Analyze data matching original code logic (0.3s chunks)
+
+    // decode 完成后再次检查
+    if (version !== loadVersion) {
+      audioBuffer = null;
+      return;
+    }
+
     wavesData = await getWavesData(audioBuffer, 0.3, linesTotal);
-    
-    // isLoading.value = false;
+
+    // 分析完成后再次检查
+    if (version !== loadVersion) {
+      audioBuffer = null;
+      wavesData = null;
+      return;
+    }
+
+    isLoading.value = false;
     if (autoPlay) {
       playAudio();
-    } else {
-        // Run visualizer once to set initial state if needed, or just let it sit
-        // runVisualizer(); 
     }
   } catch (error) {
-    console.error("Error loading audio:", error);
-    // isLoading.value = false;
+    if (version === loadVersion) {
+      console.error("Error loading audio:", error);
+      isLoading.value = false;
+    }
   }
 };
 
 const playAudio = () => {
   if (!audioBuffer || !audioContext) return;
+
+  // 确保上一个 source 已彻底断开，防止幽灵播放进程
+  if (audioSource) {
+    try {
+      audioSource.onended = null;
+      audioSource.stop();
+      audioSource.disconnect();
+    } catch (e) { /* ignore */ }
+    audioSource = null;
+  }
   
   // Create source
   audioSource = audioContext.createBufferSource();
   audioSource.buffer = audioBuffer;
-  audioSource.connect(audioContext.destination); // Connect to speakers
+  audioSource.connect(audioContext.destination);
   
   // Handle start time if resuming
   const offset = pauseTime;
   audioSource.start(0, offset);
   startTime = audioContext.currentTime - offset;
-  
+  pauseTime = 0; // 播放后立即重置，避免下次播放位置偏移
+
   isPlaying.value = true;
   runVisualizer();
-  
+
+  // 用局部变量捕获当前 source，避免闭包持有过时引用
+  const thisSource = audioSource;
   audioSource.onended = () => {
-    // Only resetting if it played to the end naturally
-    if (isPlaying.value && (audioContext.currentTime - startTime >= audioBuffer.duration)) {
-       isPlaying.value = false;
-       pauseTime = 0;
-       stopVisualizer();
+    if (audioSource !== thisSource) return; // 已被新 source 替代，忽略
+    if (isPlaying.value && (audioContext.currentTime - startTime >= audioBuffer.duration - 0.1)) {
+      isPlaying.value = false;
+      pauseTime = 0;
+      stopVisualizer();
     }
   };
 };
@@ -200,6 +234,7 @@ const playAudio = () => {
 const stopAudio = () => {
   if (audioSource) {
     try {
+      audioSource.onended = null; // 先清除回调，防止触发误判
       audioSource.stop();
       audioSource.disconnect();
     } catch (e) { /* ignore */ }
@@ -212,8 +247,10 @@ const stopAudio = () => {
 const pauseAudio = () => {
   if (audioSource) {
     try {
-      audioSource.stop();
+      audioSource.onended = null; // 先清除回调，防止触发误判
       pauseTime = audioContext.currentTime - startTime;
+      audioSource.stop();
+      audioSource.disconnect();
     } catch (e) { /* ignore */ }
     audioSource = null;
   }
@@ -230,9 +267,9 @@ const togglePlay = () => {
   if (isPlaying.value) {
     pauseAudio();
   } else {
-    // changed: Always playAudio directly as buffer should be loaded or loading
+    // 加载中忽略点击，等加载完自动播放，避免重复触发
+    if (isLoading.value) return;
     if (!audioBuffer) {
-      // Fallback if not loaded yet
       loadSong(currentSongIndex.value, true);
     } else {
       playAudio();
@@ -241,7 +278,7 @@ const togglePlay = () => {
 };
 
 const selectSong = (index) => {
-  if (currentSongIndex.value === index) {
+  if (currentSongIndex.value === index && !isLoading.value) {
       togglePlay();
       return;
   }
