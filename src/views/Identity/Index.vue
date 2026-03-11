@@ -19,38 +19,38 @@
     <div class="layer-content">
       <div class="identity-wrapper">
         <!-- 1. Title Group (First) -->
-        <h1 class="main-title stagger-item" style="--i: 1;"><span class="relic-text">I am Relic</span><br><span
-            class="blue-text">I am Ark</span></h1>
+        <h1 class="main-title stagger-item" style="--i: 1;"><span class="relic-text inline-hovertrans">I am Relic</span><br><span
+            class="blue-text inline-hovertrans">I am Ark</span></h1>
 
         <!-- 2. Profile Tag & Details (Second) -->
         <div class="profile-header stagger-item" style="--i: 8;">
           <div class="h-line-anim"></div>
-          <span class="header-tag">Profile Authenticated</span>
+          <span class="header-tag inline-hovertrans">Profile Authenticated</span>
         </div>
 
         <div class="detail-grid">
           <div class="detail-left">
             <div class="detail-item group stagger-item" style="--i: 9;">
-              <div class="icon-wrap">[MONITOR]</div>
+              <div class="icon-wrap inline-hovertrans">[MONITOR]</div>
               <div>
-                <p class="detail-sub">Status / Objective</p>
-                <p class="detail-main">JUFE Sophomore / Kaggle Preparing</p>
+                <p class="detail-sub inline-hovertrans">Status / Objective</p>
+                <p class="detail-main inline-hovertrans">JUFE Sophomore / Kaggle Preparing</p>
               </div>
             </div>
 
             <div class="detail-item group stagger-item" style="--i: 10;">
-              <div class="icon-wrap">[MUSIC]</div>
+              <div class="icon-wrap inline-hovertrans">[MUSIC]</div>
               <div>
-                <p class="detail-sub">Artist IN</p>
-                <p class="detail-main">Animenz-Style-Pianist</p>
+                <p class="detail-sub inline-hovertrans">Artist IN</p>
+                <p class="detail-main inline-hovertrans">Animenz-Style-Pianist</p>
               </div>
             </div>
           </div>
 
           <div class="detail-right">
             <div class="signature-box stagger-item" style="--i: 11;">
-              <p class="sig-label">Signature</p>
-              <p class="sig-val" style="font-family: 'Noto Sans SC', serif;">清棫</p>
+              <p class="sig-label inline-hovertrans">Signature</p>
+              <p class="sig-val inline-hovertrans" style="font-family: 'Noto Sans SC', serif;">清棫</p>
             </div>
           </div>
         </div>
@@ -191,6 +191,18 @@ onMounted(async () => {
 
 .relic-text {
   color: #888888;
+}
+
+/* 悬停发光放大 */
+.inline-hovertrans {
+  display: inline-block;
+  transition: all 0.3s;
+  user-select: none;
+}
+
+.inline-hovertrans:hover {
+  text-shadow: 0 0 10px;
+  transform: scale(1.02);
 }
 
 /* App Level Loading Screen Styles migrated from index.html */
@@ -422,6 +434,8 @@ onMounted(async () => {
   padding: 24px;
   width: 100%;
   backdrop-filter: none;
+  display: flex;
+  flex-direction: column;
 }
 
 @media (min-width: 768px) {

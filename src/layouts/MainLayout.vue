@@ -15,6 +15,8 @@
        ></div>
     </div>
     <div class="scan-effect"></div>
+    <!-- 点阵背景层：仅在聚光灯范围内显示 -->
+    <canvas ref="dotCanvas" class="dot-matrix" :style="dotMaskStyle"></canvas>
 
     <!-- 顶部导航 -->
     <nav class="top-nav">
@@ -135,12 +137,89 @@ const onBeforeLeave = (el) => {
   el.classList.add('page-leaving');
 };
 
+// --- 聚光灯 + 点阵 ---
+const mouseX = ref(0);
+const mouseY = ref(0);
+const isMouseInPage = ref(false);
+const dotCanvas = ref(null);
+
+// 绘制点阵：每个 160px 网格单元放 2×2 = 4 个圆点
+function drawDots() {
+  const canvas = dotCanvas.value;
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W = window.innerWidth;
+  const H = window.innerHeight;
+  canvas.width = W;
+  canvas.height = H;
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = 'rgba(180, 220, 255, 0.6)';
+
+  const gridSize = 160; // 与 cross-grid-background 一致
+  const dotRadius = 3;
+  // 每格 4 个点：坐标偏移分别在 40px 和 120px
+  const offsets = [40, 120];
+  const cols = Math.ceil(W / gridSize) + 1;
+  const rows = Math.ceil(H / gridSize) + 1;
+
+  // 复用同一个 Path2D，性能更好
+  const circlePath = new Path2D();
+  circlePath.arc(0, 0, dotRadius, 0, Math.PI * 2);
+
+  for (let col = 0; col < cols; col++) {
+    for (let row = 0; row < rows; row++) {
+      for (const ox of offsets) {
+        for (const oy of offsets) {
+          const x = col * gridSize + ox;
+          const y = row * gridSize + oy;
+          ctx.save();
+          ctx.translate(x, y);
+          ctx.fill(circlePath);
+          ctx.restore();
+        }
+      }
+    }
+  }
+}
+
+// 仅对点阵 canvas 生效的聚光灯 mask
+// 始终保持 maskImage（即使鼠标离开），只靠 opacity 渐隐
+// 防止移除 mask 时点阵瞬间全部闪现的 bug
+const dotMaskStyle = computed(() => {
+  const m = `radial-gradient(circle 300px at ${mouseX.value}px ${mouseY.value}px,
+    black 0%,
+    black 55%,
+    transparent 78%)`;
+  return {
+    WebkitMaskImage: m,
+    maskImage: m,
+    opacity: isMouseInPage.value ? '1' : '0',
+  };
+});
+
+const handleGlobalMouseMove = (e) => {
+  mouseX.value = e.clientX;
+  mouseY.value = e.clientY;
+  if (!isMouseInPage.value) isMouseInPage.value = true;
+};
+
+const handleMouseLeaveWindow = () => {
+  isMouseInPage.value = false;
+};
+
 onMounted(() => {
   window.addEventListener('wheel', handleWheel);
+  window.addEventListener('mousemove', handleGlobalMouseMove);
+  document.documentElement.addEventListener('mouseleave', handleMouseLeaveWindow);
+  window.addEventListener('resize', drawDots);
+  setTimeout(drawDots, 0);
 });
 
 onUnmounted(() => {
   window.removeEventListener('wheel', handleWheel);
+  window.removeEventListener('mousemove', handleGlobalMouseMove);
+  document.documentElement.removeEventListener('mouseleave', handleMouseLeaveWindow);
+  window.removeEventListener('resize', drawDots);
 });
 
 const currentPageIndex = computed(() => {
@@ -220,7 +299,7 @@ onMounted(() => {
   left: 0;
   width: 100vw;
   height: 100vh;
-  z-index: 0;
+  z-index: 4; /* 高于 spotlight-overlay(3)，不被遑罩；低于主内容(10) */
   pointer-events: none;
 }
 </style>
@@ -324,6 +403,20 @@ onMounted(() => {
     top: 50%;
     opacity: 0.1;
   }
+}
+
+/* 点阵画布：仅在鼠标聚光灯范围内显示背景方阵点 */
+.dot-matrix {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  display: block;
+  z-index: 3; /* 在 triangle-layer(2) 之上、Pixi(4) 之下 */
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 1.2s ease-in-out;
 }
 
 .scan-effect {

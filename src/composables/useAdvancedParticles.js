@@ -264,6 +264,9 @@ export function useAdvancedParticles(app) {
     const offscreenCanvas = document.createElement('canvas');
     const offscreenCtx = offscreenCanvas.getContext('2d', { willReadFrequently: true });
 
+    // 扫描结果缓存：避免重复对同一图片做昂贵的 CPU 扫描
+    const pointsCache = new Map();
+
     // --- Performance: Adaptive Quality ---
     let frameCount = 0;
     let lowFpsCount = 0;
@@ -420,9 +423,19 @@ export function useAdvancedParticles(app) {
     
     // --- 资源解析：Ark-Imitate 风格的高精度扫描 ---
     function getPointsFromSource(source, options = {}) {
+        const { type = 'text', scale = 1, color = '#FFFFFF' } = options;
+        // 缓存命中键： source + 类型 + 缩放比例决定扫描结果
+        const cacheKey = `${source}__${type}__${scale}`;
+        if (pointsCache.has(cacheKey)) {
+            return Promise.resolve(pointsCache.get(cacheKey));
+        }
+
         return new Promise((resolve) => {
-            const { type = 'text', scale = 1, color = '#FFFFFF' } = options;
-            
+            const finish = (points) => {
+                pointsCache.set(cacheKey, points);
+                resolve(points);
+            };
+
             if (type === 'image') {
                 const img = new Image();
                 img.crossOrigin = "Anonymous";
@@ -444,11 +457,11 @@ export function useAdvancedParticles(app) {
                     // 针对白底黑码或黑体字，需要反转扫描 (采样黑色部分)
                     // 修改：默认设置为 true，因为用户请求 "采样黑色部分"
                     const shouldInvert = true;
-                    resolve(scanCanvas(scaledWidth, scaledHeight, shouldInvert));
+                    finish(scanCanvas(scaledWidth, scaledHeight, shouldInvert));
                 };
                 img.onerror = (err) => {
                     console.error('Image failed to load:', source, err);
-                    resolve([]);
+                    finish([]);
                 }
             } else { // text
                 const fontSize = options.fontSize || 120;
@@ -468,7 +481,7 @@ export function useAdvancedParticles(app) {
                 offscreenCtx.textAlign = 'center';
                 offscreenCtx.fillText(source, w / 2, h / 2);
 
-                resolve(scanCanvas(w, h));
+                finish(scanCanvas(w, h));
             }
         });
     }

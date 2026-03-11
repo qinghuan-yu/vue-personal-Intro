@@ -31,7 +31,7 @@ export const PROJECTS_DATA = [
     title: '个人网页', 
     descTitle: 'PERSONAL INTRO',
     desc: '一个基于Vue的个人网页',
-    link: 'https://github.com/qinghuan-yu/vue-persenal-Intro',
+    link: 'https://github.com/qinghuan-yu/vue-personal-intro',
     image: ASSETS.VUE
   },
 ];
