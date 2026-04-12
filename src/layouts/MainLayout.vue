@@ -49,9 +49,9 @@
       </div>
 
       <div class="nav-right">
-        <a href="https://terminal.reliarc.com" target="_blank" class="nav-item terminal-link">
-          <span class="item-label">TERMINAL</span>
-          <span class="item-sub">终端</span>
+        <a href="https://blog.reliarc.com" target="_blank" class="nav-item terminal-link">
+          <span class="item-label">BLOG</span>
+          <span class="item-sub">博客</span>
         </a>
       </div>
     </nav>
