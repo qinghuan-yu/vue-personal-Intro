@@ -33,10 +33,6 @@
             <span class="item-label">PROJECTS</span>
             <span class="item-sub">项目</span>
           </router-link>
-          <router-link to="/blog" class="nav-item">
-            <span class="item-label">BLOG</span>
-            <span class="item-sub">博客</span>
-          </router-link>
           <router-link to="/music" class="nav-item">
             <span class="item-label">MUSIC</span>
             <span class="item-sub">音乐</span>
@@ -99,7 +95,7 @@ import PixiBackground from '@/components/PixiBackground.vue';
 const route = useRoute();
 const router = useRouter();
 
-const routesOrder = ['/identity', '/projects', '/blog', '/music', '/contact'];
+const routesOrder = ['/identity', '/projects', '/music', '/contact'];
 
 let isNavigating = false;
 
@@ -147,9 +143,8 @@ const currentPageIndex = computed(() => {
   const path = route.path.toLowerCase();
   if (path.includes('identity')) return '01';  
   if (path.includes('projects')) return '02';
-  if (path.includes('blog')) return '03';
-  if (path.includes('music')) return '04';
-  if (path.includes('contact')) return '05'; 
+  if (path.includes('music')) return '03';
+  if (path.includes('contact')) return '04'; 
   return '00';
 });
 
@@ -157,9 +152,8 @@ const indicatorPosition = computed(() => {
   const path = route.path.toLowerCase();
   
   if (path.includes('identity')) return '0%';
-  if (path.includes('projects')) return '25%';
-  if (path.includes('blog')) return '50%';
-  if (path.includes('music')) return '75%';
+  if (path.includes('projects')) return '33%';
+  if (path.includes('music')) return '66%';
   if (path.includes('contact')) return '100%';
   
   return '0%';

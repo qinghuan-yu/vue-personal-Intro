@@ -2,7 +2,6 @@ import { createRouter, createWebHistory } from 'vue-router';
 import MainLayout from '../layouts/MainLayout.vue';
 import Identity from '../views/Identity/Index.vue';
 import Projects from '../views/Projects/Index.vue';
-import Blog from '../views/Blog/Index.vue';
 import Music from '../views/Music/Index.vue';
 import Contact from '../views/Contact/Index.vue';
 
@@ -14,7 +13,6 @@ const routes = [
     children: [
       { path: 'identity', name: 'identity', component: Identity },
       { path: 'projects', name: 'projects', component: Projects },
-      { path: 'blog', name: 'blog', component: Blog },
       { path: 'music', name: 'music', component: Music },
       { path: 'contact', name: 'contact', component: Contact },
     ],
